@@ -1,0 +1,340 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(cuid())
+  email           String            @unique
+  password        String
+  createdAt       DateTime          @default(now())
+  role            Role              @default(USER)
+  statusUser      statusUser        @default(PENDING)
+  Anggota         Anggota?
+  PengunduranDiri PengunduranDiri[]
+
+  @@map("user")
+}
+
+model Jabatan {
+  noJabatan   Int       @id @default(autoincrement())
+  namaJabatan String    @db.VarChar(255)
+  Anggota     Anggota[]
+
+  @@map("jabatan")
+}
+
+model unitKerja {
+  noUnitKerja   Int       @id @default(autoincrement())
+  namaUnitKerja String    @db.VarChar(255)
+  alamatKantor  String    @db.VarChar(300)
+  Anggota       Anggota[]
+
+  @@map("unitkerja")
+}
+
+model Anggota {
+  noAnggota           String                @id
+  nik                 String?               @db.VarChar(17)
+  nip                 String?               @db.VarChar(17)
+  nama                String                @db.VarChar(255)
+  tanggalLahir        DateTime
+  tempatLahir         String                @db.VarChar(25)
+  jenisKelamin        String                @db.VarChar(10)
+  alamat              String?               @db.VarChar(300)
+  noTelp              String?               @db.VarChar(13)
+  jabatanId           Int
+  statusPekerjaan     statusPekerjaan       @default(TETAP)
+  unitKerjaId         Int
+  namaBank            String?               @db.VarChar(10)
+  noRek               String?               @db.VarChar(50)
+  pilManasuka         Int?
+  userEmail           String                @unique
+  statusAnggota       statusAnggota         @default(ACTIVE)
+  jabatan             Jabatan               @relation(fields: [jabatanId], references: [noJabatan])
+  unitKerja           unitKerja             @relation(fields: [unitKerjaId], references: [noUnitKerja])
+  User                User                  @relation(fields: [userEmail], references: [email])
+  PengunduranDiri     PengunduranDiri?
+  Pinjaman            Pinjaman[]
+  Simpanan            Simpanan[]
+  Pendaftar           Pendaftar[]
+  PengambilanSimpanan PengambilanSimpanan[]
+
+  @@map("anggota")
+}
+
+model PengunduranDiri {
+  noPengunduran                   String                @id @default(cuid())
+  anggotaId                       String                @unique
+  tanggalPengunduran              DateTime              @default(now())
+  keterangan                      String                @db.VarChar(255)
+  jenisUndurDiri                  jenisPengunduranDiri  @default(TRANSFER)
+  biayaPengunduranDiri            Int
+  simpananWajibPengunduranDiri    Int
+  simpananManasukaPengunduranDiri Int
+  simpananLebaranPengunduranDiri  Int
+  simpananQurbanPengunduranDiri   Int
+  simpananUbarPengunduranDiri     Int
+  totalPengunduranDiri            Int
+  totalDiterimaPengunduranDiri    Int
+  noUser                          String
+  statusPengunduranDiri           statusPengunduranDiri @default(PENDING)
+  anggota                         Anggota               @relation(fields: [anggotaId], references: [noAnggota])
+  user                            User                  @relation(fields: [noUser], references: [id])
+
+  @@map("pengundurandiri")
+}
+
+model Simpanan {
+  noSimpanan      String   @id
+  anggotaId       String
+  tanggalSimpanan DateTime
+  jenisSimpanan   String   @db.VarChar(20)
+  basil           Int
+  jumlahSimpanan  Int
+  anggota         Anggota  @relation(fields: [anggotaId], references: [noAnggota])
+
+  @@map("simpanan")
+}
+
+model PengambilanSimpanan {
+  noPengambilanSimpanan      String                    @id
+  anggotaId                  String
+  tanggalPengambilanSimpanan DateTime                  @default(now())
+  jenisPengambilanSimpanan   String                    @db.VarChar(20)
+  jumlahPengambilanSimpanan  Int
+  statusPengambilanSimpanan  statusPengambilanSimpanan @default(PENDING)
+  anggota                    Anggota                   @relation(fields: [anggotaId], references: [noAnggota])
+
+  @@map("pengambilansimpanan")
+}
+
+model PendaftaranSimpanan {
+  noPendaftaran           Int               @id @default(autoincrement())
+  namaPendaftaran         String            @db.VarChar(255)
+  jenisPendaftaran        String            @db.VarChar(50)
+  tanggalAwalSimpanan     DateTime
+  tanggalAkhirSimpanan    DateTime
+  tanggalTutupPendaftaran DateTime
+  statusPendaftaran       statusPendaftaran @default(OPEN)
+  createdAt               DateTime          @default(now())
+  Pendaftar               Pendaftar[]
+
+  @@map("pendaftaransimpanan")
+}
+
+model Pendaftar {
+  noPendaftar         Int                 @id @default(autoincrement())
+  anggotaId           String
+  pendaftaranId       Int
+  jumlahPilihan       Int
+  pendaftaranSimpanan PendaftaranSimpanan @relation(fields: [pendaftaranId], references: [noPendaftaran])
+  anggota             Anggota             @relation(fields: [anggotaId], references: [noAnggota])
+
+  @@map("pendaftar")
+}
+
+model Pinjaman {
+  noPinjaman        String              @id
+  anggotaId         String
+  tanggalPinjaman   DateTime            @default(now())
+  tujuanPinjaman    String              @db.VarChar(255)
+  waktuPengembalian Int
+  jenisPinjaman     jenisPinjaman       @default(JASA)
+  ajuanPinjaman     Int
+  jumlahDiterima    Int
+  strukGaji         String
+  jumlahPenghasilan Int
+  statusPinjaman    statusPinjaman      @default(PENDING)
+  anggota           Anggota             @relation(fields: [anggotaId], references: [noAnggota])
+  AngsuranPinjaman  AngsuranPinjaman[]
+  Asuransi          Asuransi[]
+  PelunasanPinjaman PelunasanPinjaman[]
+
+  @@map("pinjaman")
+}
+
+model Asuransi {
+  noAsuransi           Int      @id @default(autoincrement())
+  pinjamanId           String
+  usiaAsuransi         Int
+  tanggalAsuransi      DateTime @default(now())
+  tanggalAkhirAsuransi DateTime
+  masaAsuransiTH       Int
+  masaAsuransiBL       Int
+  masaAsuransiJK       Int
+  premi                Int
+  pinjaman             Pinjaman @relation(fields: [pinjamanId], references: [noPinjaman])
+
+  @@map("asuransi")
+}
+
+model AngsuranPinjaman {
+  noAngsuranPinjaman      String                 @id
+  tanggalAngsuranPinjaman DateTime               @default(now())
+  pinjamanId              String
+  angsuranPinjamanKe      Int
+  angsuranPinjamanDari    Int
+  jumlahAngsuranPinjaman  Int
+  statusAngsuranPinjaman  statusAngsuranPinjaman @default(ONPROGRESS)
+  pinjaman                Pinjaman               @relation(fields: [pinjamanId], references: [noPinjaman])
+
+  @@map("angsuranpinjaman")
+}
+
+model PelunasanPinjaman {
+  noPelunasanPinjaman         String                  @id
+  tanggalPelunasanPinjaman    DateTime                @default(now())
+  pinjamanId                  String
+  angsuranKePelunasanPinjaman Int
+  sudahDibayarkan             Int
+  buktiPelunasanPinjaman      String?
+  jenisPelunasanPinjaman      jenisPelunasanPinjaman  @default(TRANSFER)
+  jumlahPelunasanPinjaman     Int
+  statusPelunasanPinjaman     statusPelunasanPinjaman @default(PENDING)
+  pinjaman                    Pinjaman                @relation(fields: [pinjamanId], references: [noPinjaman])
+}
+
+model Master {
+  idMaster              Int             @id @default(autoincrement())
+  emailMaster           String?         @unique
+  nipMaster             String?
+  nikMaster             String?
+  namaMaster            String
+  tempatLahirMaster     String
+  tanggalLahirMaster    DateTime
+  jenisKelaminMaster    String
+  alamatMaster          String?
+  statusPekerjaanMaster statusPekerjaan @default(TETAP)
+  unitKerjaMaster       Int
+  jabatanMaster         Int
+
+  @@map("master")
+}
+
+model PotongGaji {
+  idPotonganGaji                 Int            @id @default(autoincrement())
+  tanggalPotonganGaji            DateTime       @default(now())
+  anggotaIdPotongGaji            String?
+  namaPotongGaji                 String?
+  unitGarapanPotongGaji          String?
+  simpananWajibPotongGaji        Int?
+  simpananManasukaPotongGaji     Int?
+  simpananLebaranPotongGaji      Int?
+  simpananQurbanPotongGaji       Int?
+  simpananUbarPotongGaji         Int?
+  noPinjamanJasaPotongGaji       String?
+  AngsuranKeJasaPotongGaji       Int?
+  AngsuranDariJasaPotongGaji     Int?
+  jumlahAngsuranJasaPotongGaji   Int?
+  noPinjamanBarangPotongGaji     String?
+  AngsuranKeBarangPotongGaji     Int?
+  AngsuranDariBarangPotongGaji   Int?
+  jumlahAngsuranBarangPotongGaji Int?
+  totalPotongGaji                Int?
+  statusPotonganGaji             statusPotongan @default(APPROVED)
+
+  @@map("potonggaji")
+}
+
+model VerificationToken {
+  identifier String   @id @default(uuid())
+  email      String   @unique
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+enum statusPotongan {
+  APPROVED
+  SUCCESS
+}
+
+enum statusPekerjaan {
+  TETAP
+  KONTRAK
+  HONORER
+}
+
+enum Role {
+  USER
+  ADMIN
+  BENDAHARA
+  SEKRETARIS
+}
+
+enum statusUser {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum statusPengambilanSimpanan {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum jenisPelunasanPinjaman {
+  TRANSFER
+  CASH
+}
+
+enum jenisPengunduranDiri {
+  TRANSFER
+  CASH
+}
+
+enum statusPengunduranDiri {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum statusPelunasanPinjaman {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum statusPinjaman {
+  PENDING
+  PENDINGYAYASAN
+  APPROVED
+  COMPLETED
+  NOTCOMPLETE
+  REJECTED
+}
+
+enum jenisPinjaman {
+  JASA
+  BARANG
+}
+
+enum statusAngsuranPinjaman {
+  ONPROGRESS
+  COMPLETED
+  NOTCOMPLETE
+}
+
+enum statusAnggota {
+  ACTIVE
+  NOTACTIVE
+}
+
+enum statusPendaftaran {
+  OPEN
+  CLOSE
+}
