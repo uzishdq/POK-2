@@ -86,7 +86,6 @@ interface INotifPelunasanPinjaman {
   statusPelunasanPinjaman: "PENDING" | "APPROVED" | "REJECTED";
 }
 
-// nanti tambahkan ke .env
 export const cekNotifWa = async () => {
   const notif = await fetch("https://app.ruangwa.id/api/device", {
     method: "POST",
@@ -95,10 +94,10 @@ export const cekNotifWa = async () => {
       token: process.env.RUANGWA_TOKEN!,
     }),
   });
-  const response = await notif.json();
-  console.log(response);
 
-  if (response.result) {
+  const response = await notif.json();
+
+  if (response.result == "true") {
     return { ok: true, message: response.message };
   } else {
     console.log("error : ", response.message);

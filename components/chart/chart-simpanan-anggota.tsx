@@ -1,23 +1,78 @@
 "use client";
-import { Bar, BarChart, LabelList, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer } from "@/components/ui/chart";
-import { Separator } from "@/components/ui/separator";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { TChartBarSimpanan } from "@/types/simpanan";
-import { formatToIDR } from "@/lib/helper";
 
 interface IChartSimpananAnggota {
   value: TChartBarSimpanan;
 }
 
 export default function ChartSimpananAnggota(props: IChartSimpananAnggota) {
+  const chartData = [
+    {
+      simpanan: "wajib",
+      jumlah: props.value.wajib,
+      fill: "var(--color-wajib)",
+    },
+    {
+      simpanan: "sukamana",
+      jumlah: props.value.sukamana,
+      fill: "var(--color-sukamana)",
+    },
+    {
+      simpanan: "lebaran",
+      jumlah: props.value.lebaran,
+      fill: "var(--color-lebaran)",
+    },
+    {
+      simpanan: "qurban",
+      jumlah: props.value.qurban,
+      fill: "var(--color-qurban)",
+    },
+    {
+      simpanan: "ubar",
+      jumlah: props.value.ubar,
+      fill: "var(--color-ubar)",
+    },
+  ];
+
+  const chartConfig = {
+    jumlah: {
+      label: "Saldo",
+    },
+    wajib: {
+      label: "Wajib",
+      color: "hsl(var(--chart-1))",
+    },
+    sukamana: {
+      label: "Sukamana",
+      color: "hsl(var(--chart-2))",
+    },
+    lebaran: {
+      label: "Lebaran",
+      color: "hsl(var(--chart-3))",
+    },
+    qurban: {
+      label: "Qurban",
+      color: "hsl(var(--chart-4))",
+    },
+    ubar: {
+      label: "Ubar",
+      color: "hsl(var(--chart-5))",
+    },
+  } satisfies ChartConfig;
   return (
     <Card>
       <CardHeader>
@@ -27,92 +82,36 @@ export default function ChartSimpananAnggota(props: IChartSimpananAnggota) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex gap-4 ">
-        <ChartContainer
-          config={{
-            wajib: {
-              label: "Wajib",
-              color: "hsl(var(--chart-1))",
-            },
-            sukamana: {
-              label: "Sukamana",
-              color: "hsl(var(--chart-2))",
-            },
-            lebaran: {
-              label: "Lebaran",
-              color: "hsl(var(--chart-3))",
-            },
-            qurban: {
-              label: "Qurban",
-              color: "hsl(var(--chart-4))",
-            },
-            ubar: {
-              label: "Ubar",
-              color: "hsl(var(--chart-5))",
-            },
-          }}
-          className="h-[200px] w-full"
-        >
+        <ChartContainer className="h-[200px] w-full" config={chartConfig}>
           <BarChart
+            accessibilityLayer
+            data={chartData}
+            layout="vertical"
             margin={{
               left: 10,
               right: 0,
               top: 0,
               bottom: 0,
             }}
-            data={[
-              {
-                activity: "wajib",
-                value: props.value.wajib,
-                label: formatToIDR(props.value.wajib),
-                fill: "var(--color-wajib)",
-              },
-              {
-                activity: "sukamana",
-                value: props.value.sukamana,
-                label: formatToIDR(props.value.sukamana),
-                fill: "var(--color-sukamana)",
-              },
-              {
-                activity: "lebaran",
-                value: props.value.lebaran,
-                label: formatToIDR(props.value.lebaran),
-                fill: "var(--color-lebaran)",
-              },
-              {
-                activity: "qurban",
-                value: props.value.qurban,
-                label: formatToIDR(props.value.qurban),
-                fill: "var(--color-qurban)",
-              },
-              {
-                activity: "ubar",
-                value: props.value.ubar,
-                label: formatToIDR(props.value.ubar),
-                fill: "var(--color-ubar)",
-              },
-            ]}
-            layout="vertical"
             barSize={32}
             barGap={2}
           >
-            <XAxis type="number" dataKey="value" hide />
             <YAxis
-              dataKey="activity"
+              dataKey="simpanan"
               type="category"
               tickLine={false}
               tickMargin={5}
               axisLine={false}
-              className="font-semibold capitalize"
+              tickFormatter={(value) =>
+                chartConfig[value as keyof typeof chartConfig]?.label
+              }
             />
-            <Bar dataKey="value" radius={5}>
-              <LabelList
-                position="insideLeft"
-                dataKey="label"
-                fill="white"
-                offset={8}
-                fontSize={12}
-              />
-            </Bar>
+            <XAxis dataKey="jumlah" type="number" hide />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Bar dataKey="jumlah" layout="vertical" radius={5} />
           </BarChart>
         </ChartContainer>
       </CardContent>

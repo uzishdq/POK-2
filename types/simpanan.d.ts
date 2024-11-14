@@ -107,6 +107,24 @@ export type TPendaftaranSimpananCard = {
   createdAt: Date;
 };
 
+export type TSimpananBerjangkaById = {
+  noPendaftaran: number;
+  namaPendaftaran: string;
+  jenisPendaftaran: string;
+  tanggalAwalSimpanan: Date;
+  tanggalAkhirSimpanan: Date;
+  tanggalTutupPendaftaran: Date;
+  statusPendaftaran: "OPEN" | "CLOSE";
+  createdAt: Date;
+};
+
+export type TParameterSimpananBerjangka = {
+  noPendaftaran: number;
+  dateStart: Date;
+  dateEnd: Date;
+  jenisSimpanan: JenisSimpanan;
+};
+
 export type TPendaftar = {
   anggotaId: string;
   pendaftaranId: number;

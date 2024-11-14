@@ -36,6 +36,7 @@ import {
   cekPelunasanSchema,
   PelunasanPinjamanSchema,
 } from "../schema/pelunasan-pinjaman-schema";
+import { isYou } from "../data/user";
 
 export const cekSyaratPinjaman = async (
   limit: number,
@@ -50,6 +51,10 @@ export const cekSyaratPinjaman = async (
     if (!validateValues.success) {
       return { ok: false, message: "Invalid Field!", value: null };
     }
+
+    const isPass = await isYou(validateValues.data.anggotaId);
+    if (!isPass)
+      return { ok: false, message: "Verification failed", value: null };
 
     const {
       jumlahPenghasilan,
@@ -132,6 +137,9 @@ export const addPinjaman = async (
     if (!validateValues.success) {
       return { ok: false, message: "Invalid Field!" };
     }
+
+    const isUser = await isYou(validateValues.data.anggotaId);
+    if (!isUser) return { ok: false, message: "Verification failed" };
 
     const isPinjaman = await getMaxPinjamanById(
       validateValues.data.anggotaId,

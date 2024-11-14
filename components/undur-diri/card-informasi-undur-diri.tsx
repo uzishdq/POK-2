@@ -58,6 +58,13 @@ export default function CardInformasiUndurDiri(props: ICardInformasiUndurDiri) {
                 </p>
               </div>
               <div className="flex w-full">
+                <p className="flex-1 text-left">Jumlah</p>
+                <p className="w-4">:</p>
+                <p className="flex-1">
+                  {formatToIDR(props.undurDiri.pinjamanJasa.ajuanPinjaman)}
+                </p>
+              </div>
+              <div className="flex w-full">
                 <p className="flex-1 text-left">Angsuran Jasa</p>
                 <p className="w-4">:</p>
                 <p className="flex-1">
@@ -70,6 +77,13 @@ export default function CardInformasiUndurDiri(props: ICardInformasiUndurDiri) {
                 <p className="w-4">:</p>
                 <p className="flex-1">
                   {formatToIDR(props.undurDiri.pinjamanJasa.sudahDibayarkan)}
+                </p>
+              </div>
+              <div className="flex w-full">
+                <p className="flex-1 text-left">Biaya Penalti</p>
+                <p className="w-4">:</p>
+                <p className="flex-1">
+                  {formatToIDR(props.undurDiri.pinjamanJasa.admin)}
                 </p>
               </div>
               <div className="flex w-full">
@@ -94,6 +108,13 @@ export default function CardInformasiUndurDiri(props: ICardInformasiUndurDiri) {
                 </p>
               </div>
               <div className="flex w-full">
+                <p className="flex-1 text-left">Jumlah</p>
+                <p className="w-4">:</p>
+                <p className="flex-1">
+                  {formatToIDR(props.undurDiri.pinjamanBarang.ajuanPinjaman)}
+                </p>
+              </div>
+              <div className="flex w-full">
                 <p className="flex-1 text-left">Angsuran Barang</p>
                 <p className="w-4">:</p>
                 <p className="flex-1">
@@ -106,6 +127,13 @@ export default function CardInformasiUndurDiri(props: ICardInformasiUndurDiri) {
                 <p className="w-4">:</p>
                 <p className="flex-1">
                   {formatToIDR(props.undurDiri.pinjamanBarang.sudahDibayarkan)}
+                </p>
+              </div>
+              <div className="flex w-full">
+                <p className="flex-1 text-left">Biaya Penalti</p>
+                <p className="w-4">:</p>
+                <p className="flex-1">
+                  {formatToIDR(props.undurDiri.pinjamanBarang.admin)}
                 </p>
               </div>
               <div className="flex w-full">

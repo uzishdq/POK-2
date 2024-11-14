@@ -37,7 +37,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSesi } from "@/lib/session";
 
-//kalo scroll kebawah masih belum kelihatan jelas
+//kalo scroll kebawah masih belum kelihatan jelas pada table
 
 export async function getSession() {
   const session = await getServerSession(authOptions);
@@ -118,48 +118,60 @@ export default async function TopNav() {
                   </DropdownMenuPortal>
                 </DropdownMenuSub>
               </DropdownMenuGroup>
-              <DropdownMenuGroup>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <span>Simpanan Anggota</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      {routeSimpananPetugas.map((item) => (
-                        <DropdownMenuItem asChild key={item.href}>
-                          <Link href={item.href} className="w-full">
-                            {item.name}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              </DropdownMenuGroup>
-              <DropdownMenuGroup>
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    <span>Pinjaman Anggota</span>
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuPortal>
-                    <DropdownMenuSubContent>
-                      {routePinjamanPetugas.map((item) => (
-                        <DropdownMenuItem asChild key={item.href}>
-                          <Link href={item.href} className="w-full">
-                            {item.name}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuSubContent>
-                  </DropdownMenuPortal>
-                </DropdownMenuSub>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href={ROUTES.PETUGAS.POTONGAN_GAJI} className="w-full">
-                  Potongan Gaji
-                </Link>
-              </DropdownMenuItem>
+              {userRole != "SEKRETARIS" ? (
+                <>
+                  <DropdownMenuGroup>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <span>Simpanan Anggota</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          {routeSimpananPetugas.map((item) => (
+                            <DropdownMenuItem asChild key={item.href}>
+                              <Link href={item.href} className="w-full">
+                                {item.name}
+                              </Link>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  </DropdownMenuGroup>
+                  <DropdownMenuGroup>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <span>Pinjaman Anggota</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                          {routePinjamanPetugas.map((item) => (
+                            <DropdownMenuItem asChild key={item.href}>
+                              <Link href={item.href} className="w-full">
+                                {item.name}
+                              </Link>
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={ROUTES.PETUGAS.POTONGAN_GAJI}
+                      className="w-full"
+                    >
+                      Potongan Gaji
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={ROUTES.PETUGAS.LAPORAN} className="w-full">
+                      Laporan
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              ) : null}
               <DropdownMenuItem asChild>
                 <Link
                   href={ROUTES.PETUGAS.PENGUNDURAN.PENGUNDURAN_ANGGOTA}

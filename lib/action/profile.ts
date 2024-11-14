@@ -4,6 +4,7 @@ import * as z from "zod";
 import { ProfileSchema } from "../schema/profile-shema";
 import prisma from "../prisma";
 import { revalidateTag } from "next/cache";
+import { isYou } from "../data/user";
 
 export const updateProfile = async (
   noAnggota: string,
@@ -14,6 +15,9 @@ export const updateProfile = async (
   if (!validateValues.success) {
     return { ok: false, message: "Invalid Field!" };
   }
+
+  const isPass = await isYou(noAnggota);
+  if (!isPass) return { ok: false, message: "Verification failed" };
 
   const updateProfile = await prisma.anggota.update({
     where: {

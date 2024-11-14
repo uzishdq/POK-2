@@ -14,10 +14,20 @@ import {
   calculateChartPinjamanAnggota,
   generateJenisPinjaman,
 } from "../helper";
+import { getSesi } from "../session";
 
 export const getMaxPinjamanById = unstable_cache(
   async (anggotaId: string, jenis: "BARANG" | "JASA") => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return {
+          ok: false,
+          value: null,
+        };
+      }
+
       const pinjaman = await prisma.pinjaman.findFirst({
         where: {
           OR: [{ statusPinjaman: "APPROVED" }, { statusPinjaman: "PENDING" }],
@@ -199,7 +209,13 @@ export const getListPinjamanJasa = unstable_cache(
               },
             },
           },
-          AngsuranPinjaman: true,
+          AngsuranPinjaman: {
+            where: {
+              angsuranPinjamanKe: {
+                gt: 0,
+              },
+            },
+          },
         },
       });
       if (listPinjaman) {
@@ -219,12 +235,26 @@ export const getListPinjamanJasa = unstable_cache(
 export const getListPinjamanById = unstable_cache(
   async (anggotaId: string, jenisPinjaman: "JASA" | "BARANG") => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return {
+          ok: false,
+          value: null,
+        };
+      }
       const listPinjaman = await prisma.pinjaman.findMany({
         where: {
           AND: [{ anggotaId }, { jenisPinjaman }],
         },
         include: {
-          AngsuranPinjaman: true,
+          AngsuranPinjaman: {
+            where: {
+              angsuranPinjamanKe: {
+                gt: 0,
+              },
+            },
+          },
         },
       });
       if (listPinjaman) {
@@ -265,7 +295,13 @@ export const getListPinjamanBarang = unstable_cache(
               },
             },
           },
-          AngsuranPinjaman: true,
+          AngsuranPinjaman: {
+            where: {
+              angsuranPinjamanKe: {
+                gt: 0,
+              },
+            },
+          },
         },
       });
       if (listPinjaman) {
@@ -440,6 +476,15 @@ export const getMaxAngsuran = unstable_cache(
 export const getMaxPinjaman = unstable_cache(
   async (anggotaId: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return {
+          ok: false,
+          value: null,
+        };
+      }
+
       const pelunasan = await prisma.pinjaman.findMany({
         where: {
           PelunasanPinjaman: {
@@ -481,6 +526,15 @@ const sumChartPinjamanAnggota = async (maxPinjaman: TMaxPinjaman | null) => {
 
 export const getChartPinjamanAnggota = async (anggotaId: string) => {
   try {
+    const session = await getSesi();
+
+    if (!session) {
+      return {
+        ok: false,
+        value: null,
+      };
+    }
+
     const [maxPinjamanJasa, maxPinjamanBarang] = await Promise.all([
       getMaxPinjamanById(anggotaId, "JASA"),
       getMaxPinjamanById(anggotaId, "BARANG"),

@@ -1,5 +1,4 @@
 "use client";
-import { TListSimpananBerjangka } from "@/types/simpanan";
 import React from "react";
 import { Button } from "../ui/button";
 import {
@@ -22,18 +21,13 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { useToast } from "../ui/use-toast";
 import { addPengambilanSimpananBerjangka } from "@/lib/action/simpanan";
+import { Input } from "../ui/input";
+import { TSimpananBerjangkaById } from "@/types/simpanan";
 
 interface IFormPengambilanSimpananBerjangka {
-  data: TListSimpananBerjangka[];
+  data: TSimpananBerjangkaById;
 }
 
 export default function FormPengambilanSimpananBerjangka({
@@ -44,7 +38,7 @@ export default function FormPengambilanSimpananBerjangka({
   const form = useForm<z.infer<typeof SimpananBerjangkaSchema>>({
     resolver: zodResolver(SimpananBerjangkaSchema),
     defaultValues: {
-      jenisPendaftaran: undefined,
+      noPendaftaran: data.noPendaftaran,
     },
   });
 
@@ -58,38 +52,30 @@ export default function FormPengambilanSimpananBerjangka({
     });
   };
 
+  if (data.statusPendaftaran !== "OPEN") return null;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Form Pengambilan Simpanan Berjangka Anggota</CardTitle>
+        <CardTitle>Form pengambilan {data.namaPendaftaran}</CardTitle>
         <CardDescription className="text-justify">
-          form untuk pengambilan simpanan berjangka anggota
+          Formulir ini digunakan untuk pengambilan {data.namaPendaftaran}{" "}
+          berjangka anggota
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-4">
+            <div className="space-y-4" hidden>
               <FormField
                 control={form.control}
-                name="jenisPendaftaran"
+                name="noPendaftaran"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nama Pendaftaran</FormLabel>
-                    <Select onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="pilih nama pendaftaran" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {data.map((item, index) => (
-                          <SelectItem key={index} value={item.jenisPendaftaran}>
-                            {item.namaPendaftaran}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>No.Pendaftaran</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" readOnly />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -100,7 +86,9 @@ export default function FormPengambilanSimpananBerjangka({
               className="w-full"
               disabled={form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting ? "Sedang Proses..." : "Cari"}
+              {form.formState.isSubmitting
+                ? "Sedang Proses..."
+                : "Pengambilan Simpanan Berjangka"}
             </Button>
           </form>
         </Form>

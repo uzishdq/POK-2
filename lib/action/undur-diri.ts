@@ -29,6 +29,7 @@ import {
 } from "../data/pinjaman";
 import { TMaxPinjaman } from "@/types/pinjaman";
 import { notifPengunduranAnggota } from "./notifikasi";
+import { isYou } from "../data/user";
 
 export const cekPinjamanUndurDiri = async (
   maxPinjaman: TMaxPinjaman | null,
@@ -109,6 +110,11 @@ export const cekUndurDiri = async (
     if (!validateValues.success) {
       return { ok: false, message: "Invalid Field!", value: null };
     }
+
+    const isPass = await isYou(validateValues.data.anggotaId);
+    if (!isPass)
+      return { ok: false, message: "Verification failed", value: null };
+
     const [
       totalSimpananWajib,
       totalSimpananSukamana,
@@ -182,6 +188,10 @@ export const addUndurDiri = async (values: z.infer<typeof UndurDiriSchema>) => {
     if (!validateValues.success) {
       return { ok: false, message: "Invalid Field!" };
     }
+
+    const isPass = await isYou(validateValues.data.anggotaId);
+    if (!isPass) return { ok: false, message: "Verification failed" };
+
     const [maxPinjamanJasa, maxPinjamanBarang] = await Promise.all([
       getMaxPinjamanById(validateValues.data.anggotaId, "JASA"),
       getMaxPinjamanById(validateValues.data.anggotaId, "BARANG"),

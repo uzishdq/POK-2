@@ -5,7 +5,11 @@ import {
   TUpdateAngsuran,
 } from "@/types/pinjaman";
 import { taripAsuransi } from "./data-asuransi";
-import { TPotonganApproved, TPotongGaji } from "@/types/potongan";
+import {
+  TColumnLaporan,
+  TPotonganApproved,
+  TPotongGaji,
+} from "@/types/potongan";
 import {
   TBalanceSimpanan,
   TCekUndurDiri,
@@ -19,6 +23,12 @@ import {
   SimpananKeys,
   TSplitDataPengambilanSimpananUndurDiri,
 } from "@/types/undur-diri";
+import {
+  TDataPinjamanLaporan,
+  TDataSimpananLaporan,
+  TLaporanPinjaman,
+  TLaporanSimpanan,
+} from "@/types/laporan";
 
 export function formatDatebyMonth(dateString: Date | string) {
   const dateObject = new Date(dateString);
@@ -30,6 +40,12 @@ export function formatDatebyMonth(dateString: Date | string) {
   const day = dateObject.getDate();
 
   return `${day} ${month} ${year}`;
+}
+
+export function splitJenisPendaftaran(jenisPendaftaran: string) {
+  return jenisPendaftaran
+    .replace("simpanan-", "")
+    .toUpperCase() as JenisSimpanan;
 }
 
 export function formatToIDR(data: number | null): string | null {
@@ -1178,5 +1194,165 @@ export function generateSimpananBerjangka(
     );
 
     return saving;
+  });
+}
+
+export function generateColumnsExcellSimpananBerjangka(
+  startDate: Date,
+  endDate: Date,
+): TColumnLaporan[] {
+  const columns: TColumnLaporan[] = [
+    { header: "No Anggota", value: "noAnggota" },
+    { header: "Nama", value: "nama" },
+    { header: "Unit Kerja", value: "unitKerja" },
+    { header: "Jenis Simpanan", value: "jenisSimpanan" },
+  ];
+
+  let current = new Date(startDate);
+  const end = new Date(endDate);
+
+  while (current <= end) {
+    const monthYear = current.toLocaleString("id-ID", {
+      month: "long",
+      year: "numeric",
+    });
+    columns.push({
+      header: monthYear,
+      value: monthYear.replace(/\s+/g, "_"),
+    });
+    current.setMonth(current.getMonth() + 1);
+  }
+
+  columns.push({ header: "Total Simpanan", value: "totalSimpanan" });
+
+  return columns;
+}
+
+export function transformDataExcellSimpananBerjangka(
+  dataArray: TSimpananBerjangkaValue[],
+) {
+  return dataArray.map((data) => {
+    const result: any = {
+      noAnggota: data.noAnggota,
+      nama: data.nama,
+      unitKerja: data.unitKerja,
+      jenisSimpanan: data.jenisSimpanan,
+      totalSimpanan: data.totalSimpanan,
+    };
+
+    data.simpanan.forEach((detail) => {
+      const bulanKey = detail.bulan
+        .replace(/\s+-\s+/g, "_")
+        .replace(/\s+/g, "_");
+      result[bulanKey] = detail.total;
+    });
+
+    return result;
+  });
+}
+
+export function transformLaporanPinjaman(
+  data: TDataPinjamanLaporan[],
+): TLaporanPinjaman[] {
+  const pinjaman = data.map((item) => {
+    const jasa = calculatePercentage(item.ajuanPinjaman, 1);
+    const akad = jasa * item.waktuPengembalian;
+    const angsuran = item.AngsuranPinjaman.reduce(
+      (acc, current) => {
+        acc.lastAngsuran = current.angsuranPinjamanKe;
+        acc.jumlahAngsuran += current.jumlahAngsuranPinjaman;
+        return acc;
+      },
+      {
+        lastAngsuran: 0,
+        jumlahAngsuran: 0,
+      },
+    );
+    const pokokMasuk = angsuran.jumlahAngsuran - jasa * angsuran.lastAngsuran;
+    const sisaPokok = item.ajuanPinjaman - pokokMasuk;
+    const jasaMasuk = jasa * angsuran.lastAngsuran;
+    return {
+      noAnggota: item.anggota.noAnggota,
+      nama: item.anggota.nama,
+      namaUnitKerja: item.anggota.unitKerja.namaUnitKerja,
+      noPinjaman: item.noPinjaman,
+      tanggalPinjaman: item.tanggalPinjaman,
+      waktuPengembalian: `${angsuran.lastAngsuran} / ${item.waktuPengembalian}`,
+      jenisPinjaman: item.jenisPinjaman,
+      statusPinjaman: item.statusPinjaman,
+      ajuanPinjaman: item.ajuanPinjaman,
+      jumlahAngsuran: angsuran.jumlahAngsuran,
+      akad: akad,
+      pokokMasuk: pokokMasuk,
+      jasaMasuk: jasaMasuk,
+      sisaPokok: sisaPokok,
+    };
+  });
+
+  return pinjaman;
+}
+
+export function transformLaporanSimpanan(
+  dataLaporan: TDataSimpananLaporan[],
+  startDate: Date,
+  endDate: Date,
+): TLaporanSimpanan[] {
+  const bulanRange = generateRangeMonth(startDate, endDate);
+  return dataLaporan.map((data) => {
+    const laporan: TLaporanSimpanan = {
+      noAnggota: data.noAnggota,
+      nama: data.nama,
+      namaUnitKerja: data.unitKerja.namaUnitKerja,
+      jumlahSimpanan: 0,
+      jumlahSimpananWajib: 0,
+      jumlahSimpananSukamana: 0,
+      pengambilanSimpanan: 0,
+      saldoSimpanan: 0,
+      simpanan: bulanRange.map((bulan) => ({
+        bulan,
+        total: 0,
+      })),
+    };
+
+    data.Simpanan.forEach((simpanan) => {
+      const bulanSimpanan = formatBulan(new Date(simpanan.tanggalSimpanan));
+      const simpananBulan = laporan.simpanan.find(
+        (s) => s.bulan === bulanSimpanan,
+      );
+      laporan.jumlahSimpanan += simpanan.jumlahSimpanan;
+      if (simpananBulan) {
+        simpananBulan.total += simpanan.jumlahSimpanan;
+      }
+      if (simpanan.jenisSimpanan === "WAJIB") {
+        laporan.jumlahSimpananWajib += simpanan.jumlahSimpanan;
+      }
+      if (simpanan.jenisSimpanan === "MANASUKA") {
+        laporan.jumlahSimpananSukamana += simpanan.jumlahSimpanan;
+      }
+    });
+
+    data.PengambilanSimpanan.forEach((pengambilan) => {
+      const bulanPengambilan = formatBulan(
+        new Date(pengambilan.tanggalPengambilanSimpanan),
+      );
+      const pengambilanBulan = laporan.simpanan.find(
+        (s) => s.bulan === bulanPengambilan,
+      );
+      laporan.pengambilanSimpanan += pengambilan.jumlahPengambilanSimpanan;
+      if (pengambilanBulan) {
+        pengambilanBulan.total -= pengambilan.jumlahPengambilanSimpanan;
+      }
+      if (pengambilan.jenisPengambilanSimpanan === "WAJIB") {
+        laporan.jumlahSimpananWajib -= pengambilan.jumlahPengambilanSimpanan;
+      }
+      if (pengambilan.jenisPengambilanSimpanan === "MANASUKA") {
+        laporan.jumlahSimpananSukamana -= pengambilan.jumlahPengambilanSimpanan;
+      }
+    });
+
+    laporan.saldoSimpanan =
+      laporan.jumlahSimpanan - laporan.pengambilanSimpanan;
+
+    return laporan;
   });
 }

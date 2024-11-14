@@ -16,7 +16,11 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
-import { formatDatebyMonth, formatToIDR } from "../helper";
+import {
+  formatDatebyMonth,
+  formatToIDR,
+  splitJenisPendaftaran,
+} from "../helper";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,7 +95,9 @@ export const columnSimpananBerjangka: ColumnDef<TListSimpananBerjangka>[] = [
     accessorKey: "jenisPendaftaran",
     header: "Jenis ",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("jenisPendaftaran")}</div>
+      <Badge variant="outline">
+        {splitJenisPendaftaran(row.getValue("jenisPendaftaran"))}
+      </Badge>
     ),
   },
   {
@@ -417,7 +423,6 @@ function DialogDelete({ value }: TDialog) {
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <p>Nama Pendaftaran: {value.namaPendaftaran}</p>
-          <p>jenis pendaftaran: {value.jenisPendaftaran}</p>
         </div>
         <DialogFooter className="gap-2">
           <DialogClose asChild>

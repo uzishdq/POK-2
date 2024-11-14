@@ -22,7 +22,8 @@ export const PengajuanPinjamanSchema = (limit: number) =>
     tujuanPinjaman: z
       .string()
       .min(5, "harus berisi setidaknya 5 karakter")
-      .max(40, "paling banyak 40 karakter"),
+      .max(40, "paling banyak 40 karakter")
+      .regex(/^[a-zA-Z0-9. ]*$/, "tidak boleh mengandung karakter spesial"),
     waktuPengembalian: NumberStringSchema.transform((val) =>
       typeof val === "string" ? Number(val.replace(/[^\d-]/g, "")) : val,
     ).refine((n) => n >= 5 && n <= 36, {

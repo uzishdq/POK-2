@@ -1,6 +1,7 @@
 import { Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import {
+  BENDAHARA_ROUTE,
   DEFAULT_API_URL,
   DEFAULT_AUTH,
   DEFAULT_LOGIN_REDIRECT,
@@ -24,6 +25,7 @@ export async function middleware(
   const isApiAuth = nextUrl.pathname.startsWith(DEFAULT_AUTH);
   const isApiRoute = nextUrl.pathname.startsWith(DEFAULT_API_URL);
   const isProtectedRoute = nextUrl.pathname.startsWith(PROTECTED_ROUTE);
+  const isBendaharaRoute = BENDAHARA_ROUTE.includes(nextUrl.pathname);
 
   if (isPublicRoute) {
     if (session) {
@@ -50,6 +52,10 @@ export async function middleware(
 
   if (isProtectedRoute && session?.role === "USER") {
     return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+  }
+
+  if (isBendaharaRoute && session?.role === "SEKRETARIS") {
+    return NextResponse.redirect(new URL(ROUTES.PETUGAS.INDEX, nextUrl));
   }
 
   if (isLoginRequired && session?.statusUser === "APPROVED") {

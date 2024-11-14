@@ -37,7 +37,11 @@ export const columnSimpanan: ColumnDef<TSimpanan>[] = [
     accessorKey: "jenisSimpanan",
     header: "Jenis",
     cell: ({ row }) => (
-      <Badge variant="outline">{row.getValue("jenisSimpanan")}</Badge>
+      <Badge variant="outline">
+        {row.getValue("jenisSimpanan") === "MANASUKA"
+          ? "SUKAMANA"
+          : row.getValue("jenisSimpanan")}
+      </Badge>
     ),
   },
   {
@@ -51,7 +55,7 @@ export const columnSimpanan: ColumnDef<TSimpanan>[] = [
   },
 ];
 
-export const columnLaporanSimpanan: ColumnDef<TTotalBalance>[] = [
+export const columnLaporanSimpananAll: ColumnDef<TTotalBalance>[] = [
   {
     accessorKey: "noAnggota",
     enableHiding: false,

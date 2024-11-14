@@ -88,7 +88,9 @@ export const columnPengambilanSimpananAnggota: ColumnDef<TPengambilanSimpananAng
       header: "Jenis",
       cell: ({ row }) => (
         <Badge variant="outline">
-          {row.getValue("jenisPengambilanSimpanan")}
+          {row.getValue("jenisPengambilanSimpanan") === "MANASUKA"
+            ? "SUKAMANA"
+            : row.getValue("jenisPengambilanSimpanan")}
         </Badge>
       ),
     },

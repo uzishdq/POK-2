@@ -1,5 +1,6 @@
 "use server";
 import prisma from "@/lib/prisma";
+import { getSesi } from "../session";
 
 export const getUserbyEmail = async (email: string) => {
   try {
@@ -39,5 +40,35 @@ export const getUserbyId = async (id: string) => {
   } catch (error) {
     console.log("error data : ", error);
     return null;
+  }
+};
+
+export const isYou = async (noAnggota: string) => {
+  try {
+    if (!noAnggota) return false;
+
+    const session = await getSesi();
+
+    if (!session) return false;
+
+    const anggota = await prisma.anggota.findUnique({
+      where: {
+        noAnggota,
+      },
+      select: {
+        User: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!anggota) return false;
+
+    return anggota.User.id === session.user.sub;
+  } catch (error) {
+    console.log("Verification failed : ", error);
+    return false;
   }
 };

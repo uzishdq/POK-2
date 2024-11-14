@@ -18,7 +18,7 @@ export const PengambilanSimpananSchema = (limit: number, type: string) =>
   z.object({
     anggotaId: z.string().min(1),
     jenisPengambilanSimpanan: z.enum(enumJenisSimpanan, {
-      message: "Required",
+      message: "required",
     }),
     jumlahPengambilanSimpanan: NumberOrEmptyStringSchema.transform((val) =>
       typeof val === "string" ? Number(val.replace(/[^\d-]/g, "")) : val,
@@ -36,12 +36,8 @@ export type PengambilanSimpananSchemaType = z.infer<
   ReturnType<typeof PengambilanSimpananSchema>
 >;
 
-export const PengambilanSimpananBerjangkaSchema = z.array(
-  z.object({
-    noAnggota: z.string(),
-    nama: z.string(),
-    unitKerja: z.string(),
-    jenisSimpanan: z.string(),
-    totalSimpanan: z.number(),
-  }),
-);
+// export const LaporanSimpananSchema = z.object({
+//   jenis: z.enum(enumJenisSimpanan, { message: "required" }),
+//   startDate: z.date(),
+//   endDate: z.date(),
+// });

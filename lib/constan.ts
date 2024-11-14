@@ -69,6 +69,7 @@ export const ROUTES = {
     },
     POTONGAN_GAJI: "/dashboard/petugas/potongan-gaji",
     ASURANSI: "/dashboard/petugas/asuransi",
+    LAPORAN: "/dashboard/petugas/laporan-simpanan-pinjaman",
     PENGUNDURAN: {
       PENGUNDURAN_ANGGOTA: "/dashboard/petugas/pengunduran-anggota",
       SURAT_PENGUNDURAN: (id: string) =>
@@ -76,6 +77,18 @@ export const ROUTES = {
     },
   },
 };
+
+export const BENDAHARA_ROUTE = [
+  ROUTES.PETUGAS.POTONGAN_GAJI,
+  ROUTES.PETUGAS.SIMPANAN_PETUGAS.BERJANGKA,
+  ROUTES.PETUGAS.SIMPANAN_PETUGAS.PENGAMBILAN,
+  ROUTES.PETUGAS.SIMPANAN_PETUGAS.TOTAL_SIMPANAN,
+  ROUTES.PETUGAS.PINJAMAN_PETUGAS.BARANG,
+  ROUTES.PETUGAS.PINJAMAN_PETUGAS.JASA,
+  ROUTES.PETUGAS.PINJAMAN_PETUGAS.PELUNASAN_ANGGOTA,
+  ROUTES.PETUGAS.ASURANSI,
+  ROUTES.PETUGAS.LAPORAN,
+];
 
 export const routeSimpanan = [
   { name: "Pengambilan Simpanan", href: ROUTES.SIMPANAN.PENGAMBILAN_SIMPANAN },
@@ -138,6 +151,21 @@ export const routePinjamanPetugas = [
   },
 ];
 
+export const routeLainyaPetugas = [
+  {
+    name: "Potongan Gaji",
+    href: ROUTES.PETUGAS.POTONGAN_GAJI,
+  },
+  {
+    name: "Laporan",
+    href: ROUTES.PETUGAS.LAPORAN,
+  },
+  {
+    name: "Pengunduran Anggota",
+    href: ROUTES.PETUGAS.PENGUNDURAN.PENGUNDURAN_ANGGOTA,
+  },
+];
+
 export const routeNav = [{ name: "Dashboard", href: DEFAULT_LOGIN_REDIRECT }];
 
 export const gender = [
@@ -163,10 +191,6 @@ export const bank = [
   {
     name: "BJB",
     value: "BJB",
-  },
-  {
-    name: "BJB Syariah",
-    value: "BJB Syariah",
   },
   {
     name: "MANDIRI",
@@ -262,6 +286,17 @@ export const jenisPinjaman = [
   {
     name: "Pinjaman Barang",
     value: "BARANG",
+  },
+];
+
+export const statusPinjaman = [
+  {
+    name: "Approved",
+    value: "APPROVED",
+  },
+  {
+    name: "Completed",
+    value: "COMPLETED",
   },
 ];
 
@@ -397,4 +432,18 @@ export const columnsExcelSimpananBerjangka: TColumnLaporan[] = [
   { header: "Unit Garapan", value: "unitKerja" },
   { header: "Jenis Simpanan", value: "jenisSimpanan" },
   { header: "Total", value: "totalSimpanan" },
+];
+
+export const columnsExcelLaporanPinjaman: TColumnLaporan[] = [
+  { header: "No Anggota", value: "noAnggota" },
+  { header: "Nama", value: "nama" },
+  { header: "Unit Garapan", value: "namaUnitKerja" },
+  { header: "No Pinjaman", value: "noPinjaman" },
+  { header: "Tanggal", value: "tanggalPinjaman" },
+  { header: "Angsuran Ke", value: "waktuPengembalian" },
+  { header: "Jumlah Pinjaman", value: "ajuanPinjaman" },
+  { header: "Akad", value: "akad" },
+  { header: "Pokok Masuk", value: "pokokMasuk" },
+  { header: "Jasa Masuk", value: "jasaMasuk" },
+  { header: "Sisa Pokok", value: "sisaPokok" },
 ];

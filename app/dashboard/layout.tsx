@@ -15,7 +15,9 @@ export default function DashboardLayout({
   return (
     <div>
       <TopNav />
+
       <section>{children}</section>
+
       <Toaster />
     </div>
   );

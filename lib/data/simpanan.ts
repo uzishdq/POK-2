@@ -6,11 +6,13 @@ import {
   TBalanceSimpanan,
   TChartBarSimpanan,
   TListSimpananBerjangka,
+  TParameterSimpananBerjangka,
   TPendaftaranSimpananCard,
   TPengambilanSimpanan,
   TPengambilanSimpananAnggota,
   TSimpanan,
   TSimpananBerjangka,
+  TSimpananBerjangkaById,
   TTotalBalance,
   TTotalSimpanan,
 } from "@/types/simpanan";
@@ -24,6 +26,7 @@ import {
   penguranganTotalSimpanan,
 } from "../helper";
 import { TStrukPengambilanSimpanan } from "@/types/struk";
+import { getSesi } from "../session";
 
 export const getSimpananBerjangkaPetugas = unstable_cache(
   async () => {
@@ -106,6 +109,15 @@ export const getCobaBerjangka = async () => {
 export const getTotalSimpananById = unstable_cache(
   async (anggotaId: string, jenisSimpanan: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return {
+          ok: false,
+          value: null,
+        };
+      }
+
       const pengambilanSimpanan = await prisma.pengambilanSimpanan.aggregate({
         _sum: { jumlahPengambilanSimpanan: true },
         where: {
@@ -144,6 +156,15 @@ export const getTotalSimpananById = unstable_cache(
 
 export const getAllSimpananbyId = async (anggotaId: string) => {
   try {
+    const session = await getSesi();
+
+    if (!session) {
+      return {
+        ok: false,
+        value: null,
+      };
+    }
+
     const [
       totalSimpananWajib,
       totalSimpananSukamana,
@@ -189,6 +210,15 @@ export const getAllSimpananbyId = async (anggotaId: string) => {
 
 export const getChartSimpananById = async (anggotaId: string) => {
   try {
+    const session = await getSesi();
+
+    if (!session) {
+      return {
+        ok: false,
+        value: null,
+      };
+    }
+
     const [
       totalSimpananWajib,
       totalSimpananSukamana,
@@ -289,6 +319,15 @@ export const getTotalPengambilanAnggota = async (jenisSimpanan: string) => {
 export const getSimpananById = unstable_cache(
   async (anggotaId: string, jenisSimpanan: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return {
+          ok: false,
+          value: null,
+        };
+      }
+
       const simpananWajib = await prisma.simpanan.findMany({
         where: {
           AND: [{ anggotaId }, { jenisSimpanan }],
@@ -314,6 +353,15 @@ export const getSimpananById = unstable_cache(
 export const getPengambilanSimpananById = unstable_cache(
   async (anggotaId: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return {
+          ok: false,
+          value: null,
+        };
+      }
+
       const pengambilanSimpanan = await prisma.pengambilanSimpanan.findMany({
         where: {
           anggotaId,
@@ -329,7 +377,6 @@ export const getPengambilanSimpananById = unstable_cache(
         return { ok: true, value: [] };
       }
     } catch (error) {
-      console.log("Error : ", error);
       return { ok: false, value: null };
     }
   },
@@ -426,9 +473,37 @@ export const getPengambilanSimpananApprovedAnggota = unstable_cache(
   },
 );
 
+export const getPendaftaranSimpananById = async (noPendaftran: number) => {
+  try {
+    if (!noPendaftran) return { ok: false, value: null };
+    const pendaftaran = await prisma.pendaftaranSimpanan.findUnique({
+      where: {
+        noPendaftaran: noPendaftran,
+      },
+    });
+    if (pendaftaran) {
+      return { ok: true, value: pendaftaran as TSimpananBerjangkaById };
+    } else {
+      return { ok: true, value: null };
+    }
+  } catch (error) {
+    console.log("Error : ", error);
+    return { ok: false, value: null };
+  }
+};
+
 export const getPendaftaranSimpanan = unstable_cache(
   async (jenisPendaftaran: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return {
+          ok: false,
+          value: null,
+        };
+      }
+
       const pendaftaran = await prisma.pendaftaranSimpanan.findFirst({
         where: {
           jenisPendaftaran,
@@ -510,47 +585,6 @@ export const getTotalPendaftaranSimpananValue = unstable_cache(
   ["total-pendaftar"],
   {
     tags: ["total-pendaftar"],
-  },
-);
-
-export const getCoba = unstable_cache(
-  async () => {
-    try {
-      const listSimpananBerjangka = await prisma.pendaftaranSimpanan.findMany({
-        include: {
-          Pendaftar: {
-            include: {
-              anggota: {
-                select: {
-                  nama: true,
-                  unitKerja: {
-                    select: {
-                      namaUnitKerja: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      });
-
-      if (listSimpananBerjangka.length > 0) {
-        return {
-          ok: true,
-          value: listSimpananBerjangka,
-        };
-      } else {
-        return { ok: true, value: [] };
-      }
-    } catch (error) {
-      console.log("Error : ", error);
-      return { ok: false, value: null };
-    }
-  },
-  ["list-simpanan-berjangka"],
-  {
-    tags: ["list-simpanan-berjangka"],
   },
 );
 
@@ -644,6 +678,12 @@ export const getMaxSimpananById = async (
 export const getPengambilanSimpananValueById = unstable_cache(
   async (anggotaId: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return null;
+      }
+
       const [sukamana, lebaran, qurban] = await Promise.all([
         getMaxSimpananById(anggotaId, "MANASUKA"),
         getMaxSimpananById(anggotaId, "LEBARAN"),
@@ -664,6 +704,11 @@ export const getPengambilanSimpananValueById = unstable_cache(
 export const getTotalPengambilanSimpananValueById = unstable_cache(
   async (anggotaId: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return null;
+      }
       const [sukamana, lebaran, qurban] = await Promise.all([
         getTotalPengambilanById(anggotaId, "MANASUKA"),
         getTotalPengambilanById(anggotaId, "LEBARAN"),
@@ -715,6 +760,12 @@ export const getTotalPengambilanSimpananValueAnggota = unstable_cache(
 export const getMaxBesaranPinjamanById = unstable_cache(
   async (anggotaId: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return null;
+      }
+
       const [sukamana, wajib] = await Promise.all([
         getMaxSimpananById(anggotaId, "MANASUKA"),
         getMaxSimpananById(anggotaId, "WAJIB"),
@@ -976,25 +1027,10 @@ export const getAllSimpananAnggota = async () => {
   }
 };
 
-// tambahin data pendaftaran untuk pengambilan simpanan berjangka
-export const getSimpananBerjangka = async (jenis: string) => {
+export const getSimpananBerjangka = async (
+  data: TParameterSimpananBerjangka,
+) => {
   try {
-    const simpananBerjangka = await getPendaftaranSimpanan(jenis);
-
-    if (!simpananBerjangka.ok && !simpananBerjangka.value) {
-      return {
-        ok: false,
-        value: null,
-      };
-    }
-    const data = {
-      dateStart: simpananBerjangka.value?.tanggalAwalSimpanan ?? new Date(),
-      dateEnd: simpananBerjangka.value?.tanggalAkhirSimpanan ?? new Date(),
-      jenisSimpanan: jenis
-        .replace("simpanan-", "")
-        .toUpperCase() as JenisSimpanan,
-    };
-
     const simpanan = await prisma.pendaftar.findMany({
       where: {
         AND: [
@@ -1003,7 +1039,7 @@ export const getSimpananBerjangka = async (jenis: string) => {
               statusAnggota: "ACTIVE",
             },
           },
-          { pendaftaranId: simpananBerjangka.value?.noPendaftaran },
+          { pendaftaranId: data.noPendaftaran },
         ],
       },
       select: {

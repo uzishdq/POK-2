@@ -16,7 +16,8 @@ export const SettingPendaftaranSchema = z.object({
   namaPendaftaran: z
     .string()
     .min(5, "harus berisi setidaknya 5 karakter")
-    .max(50, "paling banyak 50 karakter"),
+    .max(50, "paling banyak 50 karakter")
+    .regex(/^[a-zA-Z0-9. ]*$/, "tidak boleh mengandung karakter spesial"),
   jenisPendaftaran: z.enum(enumJenisPendaftaran, {
     message: "jenis simpanan diperlukan",
   }),
@@ -45,7 +46,9 @@ export const PendaftarSimpananSchema = z.object({
 });
 
 export const SimpananBerjangkaSchema = z.object({
-  jenisPendaftaran: z.enum(enumJenisPendaftaran, {
-    message: "nama pendaftaran diperlukan",
+  noPendaftaran: NumberOrEmptyStringSchema.transform((val) =>
+    typeof val === "string" ? Number(val) : val,
+  ).refine((n) => n >= 1, {
+    message: "tidak boleh kosong",
   }),
 });

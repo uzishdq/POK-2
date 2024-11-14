@@ -15,16 +15,21 @@ import {
 import {
   getIdPengambilanSimpanan,
   getPendaftaranSimpanan,
+  getPendaftaranSimpananById,
   getSimpananBerjangka,
 } from "../data/simpanan";
 import {
   generatePengambilanId,
+  JenisSimpanan,
   splitDataPengambilanSimpananBerjangka,
+  splitJenisPendaftaran,
 } from "../helper";
 import {
   notifPengambilanSimpanan,
   notifPengumumamSimpanan,
 } from "./notifikasi";
+import { isYou } from "../data/user";
+import { TParameterSimpananBerjangka } from "@/types/simpanan";
 
 export const addSettingSimpananBerjangka = async (
   values: z.infer<typeof SettingPendaftaranSchema>,
@@ -139,24 +144,46 @@ export const cekSimpananBerjangka = async (
         ok: false,
         message: "Invalid Field!",
         value: null,
+        dataPendaftaran: null,
       };
     }
 
-    const data = await getSimpananBerjangka(
-      validateValues.data.jenisPendaftaran,
+    const simpananBerjangka = await getPendaftaranSimpananById(
+      validateValues.data.noPendaftaran,
     );
+    if (!simpananBerjangka.ok || !simpananBerjangka.value) {
+      return {
+        ok: false,
+        message: "Simpanan Berjangka Tidak Ditemukan",
+        value: null,
+        dataPendaftaran: null,
+      };
+    }
+
+    const parameter: TParameterSimpananBerjangka = {
+      noPendaftaran: simpananBerjangka.value.noPendaftaran,
+      dateStart: simpananBerjangka.value.tanggalAwalSimpanan,
+      dateEnd: simpananBerjangka.value.tanggalAkhirSimpanan,
+      jenisSimpanan: splitJenisPendaftaran(
+        simpananBerjangka.value.jenisPendaftaran,
+      ),
+    };
+
+    const data = await getSimpananBerjangka(parameter);
 
     if (!data.ok && data.value === null) {
       return {
         ok: data.ok,
         message: "Simpanan Berjangka Tidak Ditemukan",
         value: null,
+        dataPendaftaran: null,
       };
     } else {
       return {
         ok: data.ok,
         message: "Simpanan Berjangka Ditemukan",
         value: data.value,
+        dataPendaftaran: simpananBerjangka.value,
       };
     }
   } catch (error) {
@@ -164,10 +191,12 @@ export const cekSimpananBerjangka = async (
       ok: false,
       message: "Invalid Field!",
       value: null,
+      dataPendaftaran: null,
     };
   }
 };
 
+// belom coba ini, tambahkan fungsi input pengambilan simpanan dan update pendaftaran simpanan ke close
 export const addPengambilanSimpananBerjangka = async (
   values: z.infer<typeof SimpananBerjangkaSchema>,
 ) => {
@@ -181,28 +210,50 @@ export const addPengambilanSimpananBerjangka = async (
       };
     }
 
+    const simpananBerjangka = await getPendaftaranSimpananById(
+      validateValues.data.noPendaftaran,
+    );
+
+    if (!simpananBerjangka.ok || !simpananBerjangka.value) {
+      return {
+        ok: false,
+        message: "Simpanan Berjangka Tidak Ditemukan",
+      };
+    }
+
+    if (simpananBerjangka.value.statusPendaftaran === "CLOSE") {
+      return {
+        ok: false,
+        message: "Simpanan Berjangka Sudah Ditutup",
+      };
+    }
+
+    const parameter: TParameterSimpananBerjangka = {
+      noPendaftaran: simpananBerjangka.value.noPendaftaran,
+      dateStart: simpananBerjangka.value.tanggalAwalSimpanan,
+      dateEnd: simpananBerjangka.value.tanggalAkhirSimpanan,
+      jenisSimpanan: splitJenisPendaftaran(
+        simpananBerjangka.value.jenisPendaftaran,
+      ),
+    };
+
     const [data, idPengambilan] = await Promise.all([
-      getSimpananBerjangka(validateValues.data.jenisPendaftaran),
+      getSimpananBerjangka(parameter),
       getIdPengambilanSimpanan(),
     ]);
 
-    if (!data.ok && data.value === null) {
+    if (!data.ok || data.value === null) {
       return {
         ok: data.ok,
         message: "Simpanan Berjangka Tidak Ditemukan",
       };
     }
 
-    if (data.value === null) {
-      return {
-        ok: data.ok,
-        message: "Simpanan Berjangka Tidak Ditemukan",
-      };
-    }
     const dataPengambilan = splitDataPengambilanSimpananBerjangka(
       idPengambilan,
       data.value,
     );
+
     console.log(dataPengambilan);
     return { ok: true, message: "Data berhasil disimpan" };
   } catch (error) {
@@ -220,6 +271,9 @@ export const addPendaftaranSimpanan = async (
     if (!validateValues.success) {
       return { ok: false, message: "Invalid Field!" };
     }
+
+    const isPass = await isYou(validateValues.data.anggotaId);
+    if (!isPass) return { ok: false, message: "Verification failed" };
 
     const isDaftar = await prisma.pendaftar.findFirst({
       where: {
@@ -314,6 +368,9 @@ export const addPengambilanSimpanan = async (
     if (!validateValues.success) {
       return { ok: false, message: "Invalid Field!" };
     }
+
+    const isPass = await isYou(validateValues.data.anggotaId);
+    if (!isPass) return { ok: false, message: "Verification failed" };
 
     const isDaftar = await cekPengambilanSimpananBerjangka(
       validateValues.data.jenisPengambilanSimpanan,

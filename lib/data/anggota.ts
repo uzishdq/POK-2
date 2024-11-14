@@ -2,6 +2,7 @@
 import { TAnggota, TListAnggota } from "@/types/anggota";
 import prisma from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { getSesi } from "../session";
 
 export const getPhoneByEmail = async (noAnggota: string) => {
   try {
@@ -154,6 +155,11 @@ export const getProfile = unstable_cache(
 export const getTanggalLahirById = unstable_cache(
   async (noAnggota: string) => {
     try {
+      const session = await getSesi();
+
+      if (!session) {
+        return null;
+      }
       const tgl = await prisma.anggota.findFirst({
         where: {
           noAnggota,

@@ -1,6 +1,5 @@
 import FromStatus from "@/components/auth/form-status";
 import CardPendaftaran from "@/components/pendaftaran-simpanan/card-pendaftaran";
-import { Button } from "@/components/ui/button";
 import { getPendaftaranSimpanan } from "@/lib/data/simpanan";
 import { getSesi } from "@/lib/session";
 import React from "react";

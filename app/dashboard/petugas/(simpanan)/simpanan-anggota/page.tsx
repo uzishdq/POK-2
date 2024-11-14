@@ -2,7 +2,7 @@ import FromStatus from "@/components/auth/form-status";
 import ExportExcell from "@/components/laporan/export-excell";
 import TableWrapping from "@/components/table/table-wrapping";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { columnLaporanSimpanan } from "@/lib/columns/column-simpanan";
+import { columnLaporanSimpananAll } from "@/lib/columns/column-simpanan";
 import { columnsExcelSimpananAnggota } from "@/lib/constan";
 import {
   getAllSimpananAnggota,
@@ -132,7 +132,7 @@ export default async function SimpananAnggota() {
           searchBy="nama"
           labelSearch="nama"
           data={listSimpanan.value}
-          columns={columnLaporanSimpanan}
+          columns={columnLaporanSimpananAll}
         >
           <ExportExcell
             data={listSimpanan.value}

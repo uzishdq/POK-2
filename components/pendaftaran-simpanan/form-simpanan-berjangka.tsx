@@ -30,14 +30,13 @@ import {
 import { Button } from "../ui/button";
 import {
   TListSimpananBerjangka,
+  TSimpananBerjangkaById,
   TSimpananBerjangkaValue,
 } from "@/types/simpanan";
 import { cekSimpananBerjangka } from "@/lib/action/simpanan";
-import { columnSimpananBerjangkaAnggota } from "@/lib/columns/column-simpanan-berjangka";
-import TableWrapping from "../table/table-wrapping";
 import { useToast } from "../ui/use-toast";
-
-// buat download untuk data simpanan berjangka anggota
+import CardTableSimpananBerjangka from "./card-table-simpanan-berjangka";
+import FormPengambilanSimpananBerjangka from "./form-pengambilan-simpanan-berjangka";
 
 interface IFormSimpananBerjangka {
   data: TListSimpananBerjangka[];
@@ -50,11 +49,13 @@ export default function FormSimpananBerjangka({
   const [simpananBerjangka, setSimpananBerjangka] = React.useState<
     TSimpananBerjangkaValue[] | null
   >(null);
+  const [pendaftaran, setPendaftaran] =
+    React.useState<TSimpananBerjangkaById | null>(null);
 
   const form = useForm<z.infer<typeof SimpananBerjangkaSchema>>({
     resolver: zodResolver(SimpananBerjangkaSchema),
     defaultValues: {
-      jenisPendaftaran: undefined,
+      noPendaftaran: undefined,
     },
   });
 
@@ -66,31 +67,30 @@ export default function FormSimpananBerjangka({
         description: data.message,
       });
       if (data.ok) {
+        form.reset();
         setSimpananBerjangka(data.value);
+        setPendaftaran(data.dataPendaftaran);
       }
     });
   };
 
   return (
     <Card>
-      {simpananBerjangka ? (
+      {simpananBerjangka && pendaftaran ? (
         <CardContent className="space-y-4 pt-6">
-          <TableWrapping
-            header="Simpanan Berjangka"
-            description="Data simpanan berjangka anggota"
-            searchBy="nama"
-            labelSearch="nama"
+          <CardTableSimpananBerjangka
             data={simpananBerjangka}
-            columns={columnSimpananBerjangkaAnggota}
+            pendaftaran={pendaftaran}
           />
-          <Button type="submit" className="w-full">
-            Pengambilan Simpanan Berjangka
-          </Button>
+          {pendaftaran.statusPendaftaran === "OPEN" ? (
+            <FormPengambilanSimpananBerjangka data={pendaftaran} />
+          ) : null}
           <Button
             variant="secondary"
             className="w-full"
             onClick={() => {
               setSimpananBerjangka(null);
+              setPendaftaran(null);
             }}
           >
             Reset
@@ -102,11 +102,10 @@ export default function FormSimpananBerjangka({
             <CardTitle>Form Simpanan Berjangka Anggota</CardTitle>
             <CardDescription className="text-justify">
               Petugas diminta untuk memilih nama pendaftaran dari dropdown menu
-              yang tersedia. Setelah memilih, tabel yang berisi informasi
-              lengkap mengenai simpanan berjangka anggota akan ditampilkan.
-              Tabel ini mencakup detail seperti nama anggota, jenis simpanan,
-              jangka waktu, dan status simpanan, memudahkan petugas dalam
-              melakukan pengecekan dan pengelolaan data simpanan berjangka.
+              yang tersedia. Setelah memilih, tabel yang berisi mengenai
+              simpanan berjangka anggota akan ditampilkan. Memudahkan petugas
+              dalam melakukan pengecekan dan pengelolaan data simpanan
+              berjangka.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -118,7 +117,7 @@ export default function FormSimpananBerjangka({
                 <div className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="jenisPendaftaran"
+                    name="noPendaftaran"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Nama Pendaftaran</FormLabel>
@@ -132,7 +131,7 @@ export default function FormSimpananBerjangka({
                             {data.map((item, index) => (
                               <SelectItem
                                 key={index}
-                                value={item.jenisPendaftaran}
+                                value={item.noPendaftaran.toString()}
                               >
                                 {item.namaPendaftaran}
                               </SelectItem>

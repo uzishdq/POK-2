@@ -105,7 +105,7 @@ export default async function PengambilanSimpanan() {
         {pengambilanSimpanan && pengambilanSimpanan.value && (
           <TableWrappingDate
             header="Data Pengambilan Simpanan"
-            description="Data yang masuk dalam pengambilan simpanan"
+            description="Data yang mencatat setiap transaksi pengambilan simpanan, termasuk detail jumlah, tanggal, jenis simpanan dan status pengambilan"
             searchBy="noPengambilanSimpanan"
             labelSearch="no pengambilan simpanan"
             input={true}
